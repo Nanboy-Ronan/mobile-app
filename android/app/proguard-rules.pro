@@ -1,0 +1,6 @@
+-keep class com.facebook.react.** { *; }
+-keep class com.swmansion.** { *; }
+-keep class okhttp3.** { *; }
+-keep class okio.** { *; }
+-keep class com.google.firebase.** { *; }
+-dontwarn com.google.firebase.messaging.**

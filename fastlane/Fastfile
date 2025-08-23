@@ -1,0 +1,17 @@
+default_platform(:ios)
+
+platform :ios do
+  desc 'Build and upload to TestFlight'
+  lane :beta do
+    build_ios_app(scheme: 'mobile-app')
+    upload_to_testflight
+  end
+end
+
+platform :android do
+  desc 'Build and upload to Play Store beta'
+  lane :beta do
+    gradle(task: 'assemble', build_type: 'Release')
+    upload_to_play_store(track: 'beta')
+  end
+end

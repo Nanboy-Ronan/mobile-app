@@ -1,0 +1,4 @@
+app_identifier("com.example.mobileapp")
+apple_id("your-apple-id@example.com")
+
+package_name("com.example.mobileapp")

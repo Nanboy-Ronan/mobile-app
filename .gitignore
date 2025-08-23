@@ -1,0 +1,64 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# React Native / Metro
+.expo/
+.expo-shared/
+.expo-env.json
+web-build/
+dist/
+build/
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+__MACOSX/
+
+# Android
+android/.gradle/
+android/app/build/
+android/build/
+android/.idea/
+*.iml
+*.apk
+*.aab
+*.dex
+*.class
+
+# iOS (if added later)
+ios/build/
+ios/Pods/
+*.xcworkspace
+*.xcuserstate
+*.xcuserdata/
+
+# Testing
+coverage/
+jest-cache/
+jest-results.json
+reports/
+e2e/artifacts/
+e2e/*.log
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Git
+.git/
