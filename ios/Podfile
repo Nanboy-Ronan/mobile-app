@@ -1,0 +1,103 @@
+# Resolve react_native_pods.rb with node to allow for hoisting
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
+
+platform :ios, min_ios_version_supported
+prepare_react_native_project!
+
+# Configure iOS permission handlers for react-native-permissions
+# Only include the handlers you actually use to avoid bloat.
+require_relative '../node_modules/react-native-permissions/scripts/setup.rb'
+setup_permissions([
+  'Microphone',    # PERMISSIONS.IOS.MICROPHONE
+  'MediaLibrary',  # PERMISSIONS.IOS.MEDIA_LIBRARY
+])
+
+linkage = ENV['USE_FRAMEWORKS']
+# Auto-enable static frameworks when Swift is detected and no explicit env is set.
+if linkage.nil?
+  swift_sources = Dir.glob(File.join(__dir__, 'TempApp', '**', '*.swift'))
+  if swift_sources.length > 0
+    linkage = 'static'
+    Pod::UI.puts "Swift sources detected; enabling use_frameworks! (:static)".yellow
+  end
+end
+
+if linkage
+  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
+  use_frameworks! :linkage => linkage.to_sym
+end
+
+# NOTE: Removing global modular headers to avoid
+# non-modular include errors in some pods (e.g., Firebase,
+# react-native-document-picker) when built as frameworks.
+# If you need modular headers for a specific pod, set it per-pod instead.
+# use_modular_headers!
+
+target 'TempApp' do
+  config = use_native_modules!
+
+  use_react_native!(
+    :path => config[:reactNativePath],
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/..",
+    # Force disable New Architecture to avoid missing codegen headers like
+    # <rndocumentpicker/rndocumentpicker.h> until all third‑party pods are ready.
+    :new_arch_enabled => false
+  )
+
+  post_install do |installer|
+    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false,
+      # :ccache_enabled => true
+    )
+
+    # Allow non‑modular includes in framework modules and make sure
+    # they don't fail the build as errors (Xcode 15/16 tightened defaults).
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |bc|
+        # Primary switch: allow non‑modular includes
+        bc.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+
+        # Be explicit about not treating warnings as errors in Pods
+        bc.build_settings['GCC_TREAT_WARNINGS_AS_ERRORS'] = 'NO'
+
+        # Some toolchains still pass -Werror=non-modular-include-in-framework-module.
+        # Append flags to neutralize that specific error.
+        existing = bc.build_settings['OTHER_CFLAGS']
+        existing = [existing].flatten.compact
+        unless existing.include?('$(inherited)')
+          existing.unshift('$(inherited)')
+        end
+        existing += ['-Wno-non-modular-include-in-framework-module', '-Wno-error=non-modular-include-in-framework-module']
+        bc.build_settings['OTHER_CFLAGS'] = existing
+
+        # Reduce noise from quoted includes in framework headers
+        bc.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
+
+        # react-native-document-picker (9.x) sometimes fails to resolve its
+        # own headers when built as a framework in Xcode 15+/RN 0.76.
+        # Ensure the pod can find headers directly from its source dir.
+        if target.name == 'react-native-document-picker'
+          paths = bc.build_settings['HEADER_SEARCH_PATHS']
+          paths = [paths].flatten.compact
+          unless paths.include?('$(inherited)')
+            paths.unshift('$(inherited)')
+          end
+          # From ios/Pods to app/node_modules/... is ../../node_modules
+          extra = '$(PODS_ROOT)/../../node_modules/react-native-document-picker/ios'
+          unless paths.include?(extra)
+            paths << extra
+          end
+          bc.build_settings['HEADER_SEARCH_PATHS'] = paths
+        end
+      end
+    end
+  end
+end
