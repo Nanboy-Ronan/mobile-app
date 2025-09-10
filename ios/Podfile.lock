@@ -1,4 +1,19 @@
 PODS:
+  - AFNetworking (4.0.1):
+    - AFNetworking/NSURLSession (= 4.0.1)
+    - AFNetworking/Reachability (= 4.0.1)
+    - AFNetworking/Security (= 4.0.1)
+    - AFNetworking/Serialization (= 4.0.1)
+    - AFNetworking/UIKit (= 4.0.1)
+  - AFNetworking/NSURLSession (4.0.1):
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+  - AFNetworking/Reachability (4.0.1)
+  - AFNetworking/Security (4.0.1)
+  - AFNetworking/Serialization (4.0.1)
+  - AFNetworking/UIKit (4.0.1):
+    - AFNetworking/NSURLSession
   - boost (1.84.0)
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.76.1)
@@ -1589,6 +1604,9 @@ PODS:
     - RNFBApp
   - RNPermissions (3.9.2):
     - React-Core
+  - RNSslPinning (1.6.0):
+    - AFNetworking (~> 4.0)
+    - React
   - SocketRocket (0.7.1)
   - Yoga (0.0.0)
 
@@ -1664,10 +1682,12 @@ DEPENDENCIES:
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - RNPermissions (from `../node_modules/react-native-permissions`)
+  - RNSslPinning (from `../node_modules/react-native-ssl-pinning`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
   trunk:
+    - AFNetworking
     - Firebase
     - FirebaseCore
     - FirebaseCoreExtension
@@ -1820,10 +1840,13 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/messaging"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
+  RNSslPinning:
+    :path: "../node_modules/react-native-ssl-pinning"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
+  AFNetworking: 3bd23d814e976cd148d7d44c3ab78017b744cd58
   boost: 1dca942403ed9342f98334bf4c3621f011aa7946
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
   FBLazyVector: 7075bb12898bc3998fd60f4b7ca422496cc2cdf7
@@ -1902,10 +1925,11 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: a03b770a50541a761447cea9c24536047832124d
   RNFBApp: bd6d69625c68f9be09e537e9049fe4091bf5f3c6
   RNFBMessaging: ab40c53e08df9cb3406dc67c35e68e03e374fb5b
-  RNPermissions: 2f96606ce4386b3dec8bc9f3e178c8d66e06353e
+  RNPermissions: 47f57017a368c09834040855fdde76c4b65372a4
+  RNSslPinning: 19ba950a15324b874ae11be2135ae11e0fb5f702
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: 83048fe4b4ce15018a5e9ccbf0b06bd76fc643d4
 
-PODFILE CHECKSUM: c799f14a83012a6f794752adb252027eecee7e71
+PODFILE CHECKSUM: c96cb3c441fa21c31baccd3a27ecabd6c4a12090
 
 COCOAPODS: 1.16.2
