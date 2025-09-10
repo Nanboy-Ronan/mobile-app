@@ -32,8 +32,10 @@ export default function HomeScreen({ openChat, openHousing }) {
   const fetchMemories = async () => {
     try {
       const data = await getMemories();
-      setMemories(data);
-      await saveMemories(data);
+      // Ensure data is always an array
+      const memoryData = Array.isArray(data) ? data : [];
+      setMemories(memoryData);
+      await saveMemories(memoryData);
     } catch (err) {
       console.warn(err.message);
       const local = await loadMemoriesLocal();

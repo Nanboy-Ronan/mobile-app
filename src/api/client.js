@@ -1,11 +1,37 @@
-import axios from 'axios';
+// import axios from 'axios';
 import config from '../config';
 import { getToken, setToken } from '../storage';
 
+import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import { ReactNativeSSLPinning, fetch as sslFetch } from 'react-native-ssl-pinning'
+const insecureAdapter = async (config: AxiosRequestConfig): Promise<AxiosResponse> => {
+    const response = await sslFetch(config.baseURL+config.url, {
+        method: config.method?.toUpperCase() as ReactNativeSSLPinning.Options['method'],
+        sslPinning: { certs: [] },
+        disableAllSecurity: true,
+        timeoutInterval: config.timeout,
+        headers: config.headers as ReactNativeSSLPinning.Options['headers'],
+        body: config.data,
+    })
+
+    return {
+        data: await response.json(),
+        status: response.status,
+        statusText: '',
+        headers: response.headers,
+        config: config as InternalAxiosRequestConfig,
+    }
+}
+
 // Create an axios instance with default configuration
-const api = axios.create({
-  baseURL: config.apiUrl,
+console.log('apiUrl', config.apiUrl);
+console.log('apiKey', config.apiKey);
+console.log('adapter', insecureAdapter);
+const api = axios.create({ 
+  baseURL: config.apiUrl, 
+  adapter: insecureAdapter,
   withCredentials: true,
+  timeout: 10000,
 });
 
 api.interceptors.request.use(async (cfg) => {
@@ -29,13 +55,66 @@ api.interceptors.response.use(
     return response.data;
   },
   (error) => {
+    console.log('API Error:', error.response?.data || error.message);
+    console.log('API Error Status:', error.response?.status);
+    console.log('API Error Config:', error.config);
     const message = error.response?.data?.message || error.message;
     return Promise.reject(new Error(message));
   },
 );
 
-export function getMemories() {
-  return api.get('/memories');
+export async function getMemories() {
+  try {
+    // const response = await axios.get('https://206.12.92.174:5000/memories', {
+    //   headers: {
+    //     'Accept': 'application/json'
+    //   },
+    //   // In React Native, SSL certificate validation is handled differently
+    //   // You may need to configure your app to allow self-signed certificates
+    //   timeout: 10000, // 10 second timeout
+    // });
+    // const response = await api.get(config.apiUrl+'/memories', {
+    //   headers: {
+    //     'Accept': 'application/json'
+    //   },
+    //   timeout: 10000,
+    // });
+    //   Test 1: Check what URLs are being constructed
+      console.log('Config apiUrl:', config.apiUrl);
+      console.log('Axios baseURL:', api.defaults.baseURL);
+      
+      // Test 2: Try the working version first
+      console.log('Testing full URL approach...');
+      const response = await api.get('/memories');
+      // console.log('Full URL works:', fullResponse);
+      
+      // Test 3: Now try with instance
+    //   console.log('Testing instance approach...');
+    //   const instanceResponse = await api.get('/memories');
+    //   console.log('Instance works:', instanceResponse);
+    // // console.log("response", response)
+    console.log("response type", typeof response, "is array", Array.isArray(response), "array length", response.length)
+
+    // // Format the response for display
+    // const formattedResponse = typeof response.data === 'object' 
+    //   ? JSON.stringify(response.data, null, 2)
+    //   : response.data;
+
+    // // Format the response for display
+    // const formattedResponse = typeof response.data === 'object' 
+    //   ? JSON.stringify(response.data, null, 2)
+    //   : response.data;
+    // console.log("formated response", formattedResponse)
+
+    return response;
+    
+  } catch (err) {
+    const errorMessage = err.message || 'Unknown error occurred';
+    // setError(errorMessage);
+    // Alert.alert('Request Failed', errorMessage);
+    console.log("error in getting memory", err)
+    return errorMessage;
+  } 
 }
 
 function upload(endpoint, file, name) {
